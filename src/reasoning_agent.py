@@ -1,6 +1,7 @@
 import json
 import numpy as np
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
+from src.skill_generator import ExpertSkillGenerator
 
 class KeplerReasoningAgent:
     """
@@ -8,14 +9,16 @@ class KeplerReasoningAgent:
     Uses inferred physical properties to guide the formulation of hypotheses.
     """
 
-    def __init__(self, model_client: Any):
+    def __init__(self, model_client: Any, skill_generator: Optional[ExpertSkillGenerator] = None):
         """
         Initialize with a model client for LLM inference.
         
         Args:
             model_client: An object that supports a 'generate' method.
+            skill_generator: Optional generator to distill skills from successful runs.
         """
         self.model_client = model_client
+        self.skill_generator = skill_generator
 
     def reason(self, data: Dict[str, Any], physical_constraints: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -100,3 +103,11 @@ Return your response in JSON format with the following keys:
                 "proposed_expressions": [],
                 "raw_response": response_text
             }
+
+    def distill_skill(self, trajectory: Dict[str, Any], metrics: Dict[str, Any], skill_name: str):
+        """
+        Triggers skill generation if a generator is configured.
+        """
+        if self.skill_generator:
+            return self.skill_generator.generate_skill(trajectory, metrics, skill_name)
+        return None

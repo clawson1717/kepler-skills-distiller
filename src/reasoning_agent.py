@@ -111,3 +111,25 @@ Return your response in JSON format with the following keys:
         if self.skill_generator:
             return self.skill_generator.generate_skill(trajectory, metrics, skill_name)
         return None
+
+    def discover(self, data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Run the full discovery pipeline on data.
+        
+        Args:
+            data: Raw numerical data.
+            
+        Returns:
+            Dictionary with discovery results.
+        """
+        # Use the reason method with empty constraints for basic discovery
+        result = self.reason(data, {})
+        
+        # Add success flag based on whether we found expressions
+        result["success"] = len(result.get("proposed_expressions", [])) > 0
+        
+        # Set best expression
+        expressions = result.get("proposed_expressions", [])
+        result["best_expression"] = expressions[0] if expressions else None
+        
+        return result
